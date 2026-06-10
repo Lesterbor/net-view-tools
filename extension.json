@@ -1,0 +1,82 @@
+{
+	"name": "net-view-tools",
+	"uuid": "7473ae6b7f5f4f7cab9002bf886fed2c",
+	"displayName": "网表可视化",
+	"description": "net网表可视化工具",
+	"version": "1.0.0",
+	"publisher": "千樊",
+	"engines": {
+		"eda": "^2.3.0"
+	},
+	"license": "Apache-2.0",
+	"repository": {
+		"type": "extension-store",
+		"url": ""
+	},
+	"categories": "Other",
+	"keywords": ["SDK"],
+	"images": {
+		"logo": "./images/logo.png"
+	},
+	"homepage": "https://fantech.top",
+	"bugs": "https://lceda.cn/page/feedback?originPage=other",
+	"activationEvents": {},
+	"entry": "./dist/index",
+	"dependentExtensions": {},
+	"headerMenus": {
+		"home": [
+			{
+				"id": "BLTMenuMain",
+				"title": "网表",
+				"menuItems": [
+					{
+						"id": "NetView",
+						"title": "网表可视化",
+						"registerFn": "NetViewMain"
+					},
+					{
+						"id": "About",
+						"title": "关于",
+						"registerFn": "about"
+					}
+				]
+			}
+		],
+		"sch": [
+			{
+				"id": "BLTMenuMain",
+				"title": "网表",
+				"menuItems": [
+					{
+						"id": "NetView",
+						"title": "网表可视化",
+						"registerFn": "NetViewMain"
+					},
+					{
+						"id": "About",
+						"title": "关于",
+						"registerFn": "about"
+					}
+				]
+			}
+		],
+		"pcb": [
+			{
+				"id": "BLTMenuMain",
+				"title": "网表",
+				"menuItems": [
+					{
+						"id": "NetView",
+						"title": "网表可视化",
+						"registerFn": "NetViewMain"
+					},
+					{
+						"id": "About",
+						"title": "关于",
+						"registerFn": "about"
+					}
+				]
+			}
+		]
+	}
+}

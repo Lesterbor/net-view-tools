@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>关于 - 网表可视化工具</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+
+			html,
+			body {
+				width: 100%;
+				height: 100%;
+				overflow: hidden;
+				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			}
+
+			.container {
+				padding: 24px;
+				max-width: 600px;
+				margin: 0 auto;
+				color: white;
+			}
+
+			.header {
+				text-align: center;
+				margin-bottom: 24px;
+			}
+
+			.logo {
+				width: 64px;
+				height: 64px;
+				margin-bottom: 16px;
+			}
+
+			.title {
+				font-size: 24px;
+				font-weight: 600;
+				margin-bottom: 8px;
+			}
+
+			.subtitle {
+				font-size: 14px;
+				opacity: 0.8;
+			}
+
+			.version {
+				display: inline-block;
+				background: rgba(255, 255, 255, 0.2);
+				padding: 4px 12px;
+				border-radius: 12px;
+				font-size: 12px;
+				margin-top: 8px;
+			}
+
+			.section {
+				margin-bottom: 20px;
+			}
+
+			.section-title {
+				font-size: 14px;
+				font-weight: 600;
+				opacity: 0.9;
+				margin-bottom: 10px;
+				padding-bottom: 6px;
+				border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+			}
+
+			.feature-list {
+				list-style: none;
+			}
+
+			.feature-item {
+				font-size: 13px;
+				padding: 6px 0;
+				display: flex;
+				align-items: flex-start;
+			}
+
+			.feature-item::before {
+				content: '•';
+				margin-right: 8px;
+				opacity: 0.7;
+			}
+
+			.feature-name {
+				font-weight: 500;
+			}
+
+			.feature-desc {
+				opacity: 0.8;
+				font-size: 12px;
+			}
+
+			.tech-list {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+			}
+
+			.tech-tag {
+				background: rgba(255, 255, 255, 0.15);
+				padding: 4px 10px;
+				border-radius: 4px;
+				font-size: 11px;
+			}
+
+			.info-row {
+				display: flex;
+				justify-content: space-between;
+				padding: 6px 0;
+				font-size: 12px;
+				opacity: 0.9;
+			}
+
+			.info-label {
+				opacity: 0.7;
+			}
+
+			.footer {
+				text-align: center;
+				margin-top: 24px;
+				padding-top: 16px;
+				border-top: 1px solid rgba(255, 255, 255, 0.2);
+				font-size: 11px;
+				opacity: 0.6;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<div class="header">
+				<h1 class="title">网表可视化工具</h1>
+				<p class="subtitle">Netlist Visualization Tool</p>
+				<span class="version">v1.0.0</span>
+			</div>
+
+			<div class="section">
+				<div class="section-title">功能特性</div>
+				<ul class="feature-list">
+					<li class="feature-item">
+						<div>
+							<span class="feature-name">文件概览</span><br /><span class="feature-desc">顶部标题栏显示文件名、元件数量和网络数量</span>
+						</div>
+					</li>
+					<li class="feature-item">
+						<div><span class="feature-name">元件列表</span><br /><span class="feature-desc">展示所有器件列表，支持搜索功能</span></div>
+					</li>
+					<li class="feature-item">
+						<div>
+							<span class="feature-name">网络列表</span><br /><span class="feature-desc">展示所有网络列表，支持搜索和过滤功能</span>
+						</div>
+					</li>
+					<li class="feature-item">
+						<div>
+							<span class="feature-name">网络详情</span><br /><span class="feature-desc"
+								>显示选中网络的详细信息（网络名称、引脚数量、引脚列表）</span
+							>
+						</div>
+					</li>
+					<li class="feature-item">
+						<div>
+							<span class="feature-name">绘图区域</span><br /><span class="feature-desc">交互式画布，可视化展示元件和网络连接关系</span>
+						</div>
+					</li>
+					<li class="feature-item">
+						<div>
+							<span class="feature-name">缩放控制</span><br /><span class="feature-desc">支持放大/缩小操作，显示当前缩放百分比</span>
+						</div>
+					</li>
+					<li class="feature-item">
+						<div>
+							<span class="feature-name">过滤网络</span><br /><span class="feature-desc"
+								>支持过滤指定网络，已过滤网络标签显示在绘图区域右下角</span
+							>
+						</div>
+					</li>
+				</ul>
+			</div>
+
+			<div class="section">
+				<div class="section-title">技术实现</div>
+				<div class="tech-list">
+					<span class="tech-tag">HTML5</span>
+					<span class="tech-tag">CSS3</span>
+					<span class="tech-tag">JavaScript ES6+</span>
+					<span class="tech-tag">Canvas 2D API</span>
+					<span class="tech-tag">Flexbox</span>
+					<span class="tech-tag">响应式设计</span>
+				</div>
+			</div>
+
+			<div class="section">
+				<div class="section-title">扩展信息</div>
+				<div class="info-row">
+					<span class="info-label">插件名称</span>
+					<span>网表可视化</span>
+				</div>
+				<div class="info-row">
+					<span class="info-label">版本号</span>
+					<span>1.0.0</span>
+				</div>
+				<div class="info-row">
+					<span class="info-label">发布者</span>
+					<span>千樊</span>
+				</div>
+				<div class="info-row">
+					<span class="info-label">许可证</span>
+					<span>Apache-2.0</span>
+				</div>
+			</div>
+
+			<div class="footer">
+				EDA 扩展插件<br />
+				网表可视化工具
+			</div>
+		</div>
+	</body>
+</html>

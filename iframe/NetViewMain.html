@@ -1,0 +1,1807 @@
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>网表可视化工具</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+				font-family: 'Microsoft Yahei', sans-serif;
+			}
+
+			body {
+				background-color: #1a1a1a;
+				overflow: hidden;
+				margin: 0;
+				padding: 0;
+				border: none;
+			}
+
+			.calculator-container {
+				height: 100vh;
+				display: flex;
+				flex-direction: column;
+				overflow: hidden;
+				user-select: none;
+				margin: 0;
+				padding: 0;
+				border: none;
+			}
+
+			/* 顶部标题栏 */
+			.top-header {
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				padding: 4px 12px;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				flex-shrink: 0;
+				height: 28px;
+			}
+
+			.header-title {
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				color: #fff;
+			}
+
+			.header-title .main-title {
+				font-size: 12px;
+				font-weight: 600;
+				letter-spacing: 0.5px;
+			}
+
+			.header-title .separator {
+				font-size: 12px;
+				opacity: 0.7;
+			}
+
+			.header-title .file-name {
+				font-size: 11px;
+				font-weight: 500;
+				opacity: 0.9;
+				white-space: nowrap;
+			}
+
+			.header-stats {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+			}
+
+			.header-stat {
+				display: flex;
+				align-items: center;
+				gap: 4px;
+				background: rgba(255, 255, 255, 0.2);
+				padding: 2px 8px;
+				font-size: 11px;
+				color: #fff;
+			}
+
+			.header-stat .num {
+				font-weight: 700;
+				font-size: 12px;
+			}
+
+			.header-stat .txt {
+				opacity: 0.9;
+			}
+
+			.main-workspace {
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+				overflow: hidden;
+				min-height: 0;
+				height: 100%;
+			}
+
+			/* 主内容区域 */
+			.content-area {
+				flex: 1;
+				display: flex;
+				overflow: hidden;
+				min-height: 0;
+			}
+
+			/* 左侧面板 */
+			.side-panel {
+				width: 220px;
+				display: flex;
+				flex-direction: column;
+				flex-shrink: 0;
+				overflow: hidden;
+				height: 100%;
+			}
+
+			/* 标签页容器 */
+			.list-panel {
+				flex: 1;
+				background: #fff;
+				display: flex;
+				flex-direction: column;
+				overflow: hidden;
+				min-height: 0;
+			}
+
+			.tabs-header {
+				display: flex;
+				border-bottom: 1px solid #ebeef5;
+				background: #fafbfc;
+			}
+
+			.tab-item {
+				flex: 1;
+				text-align: center;
+				padding: 10px 0;
+				font-size: 13px;
+				cursor: pointer;
+				color: #606266;
+				position: relative;
+				transition: all 0.3s ease;
+			}
+
+			.tab-item:hover {
+				color: #409eff;
+				background: #f5f7fa;
+			}
+
+			.tab-item.active {
+				color: #409eff;
+				font-weight: 600;
+				background: #fff;
+			}
+
+			.tab-item.active::after {
+				content: '';
+				position: absolute;
+				bottom: -1px;
+				left: 0;
+				width: 100%;
+				height: 2px;
+				background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+			}
+
+			.tab-content {
+				flex: 1;
+				overflow: hidden;
+				display: flex;
+				flex-direction: column;
+			}
+
+			.tab-pane {
+				height: 100%;
+				display: none;
+				flex-direction: column;
+			}
+
+			.tab-pane.active {
+				display: flex;
+			}
+
+			/* 搜索框 */
+			.search-box {
+				padding: 8px;
+			}
+
+			.search-input {
+				width: 100%;
+				height: 30px;
+				padding: 0 8px;
+				border: 1px solid #e4e7ed;
+				font-size: 12px;
+				outline: none;
+				transition: all 0.3s ease;
+				background: #fafbfc;
+			}
+
+			.search-input:focus {
+				border-color: #667eea;
+				background: #fff;
+			}
+
+			/* 滚动列表 */
+			.scroll-list {
+				flex: 1;
+				overflow-y: auto;
+				overflow-x: hidden;
+				padding: 6px;
+			}
+
+			.custom-scrollbar::-webkit-scrollbar {
+				width: 6px;
+			}
+
+			.custom-scrollbar::-webkit-scrollbar-track {
+				background: #f5f7fa;
+				border-radius: 3px;
+			}
+
+			.custom-scrollbar::-webkit-scrollbar-thumb {
+				background: linear-gradient(135deg, #c0c4cc 0%, #909399 100%);
+				border-radius: 3px;
+			}
+
+			.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+				background: linear-gradient(135deg, #909399 0%, #606266 100%);
+			}
+
+			.list-item {
+				padding: 6px 8px;
+				margin-bottom: 3px;
+				background: #fff;
+				border: 1px solid #ebeef5;
+				cursor: pointer;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				transition: all 0.2s ease;
+			}
+
+			.list-item:hover {
+				border-color: #c6e2ff;
+				background: #f5f7fa;
+				transform: translateX(2px);
+			}
+
+			.list-item.active {
+				border-color: #667eea;
+				background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+			}
+
+			.list-item.filtered {
+				opacity: 0.5;
+				border-color: #ebeef5;
+				background: #fafafa;
+			}
+
+			.list-item.filtered:hover {
+				border-color: #ebeef5;
+				background: #f5f5f5;
+			}
+
+			.desig {
+				font-weight: 600;
+				font-size: 13px;
+				color: #303133;
+			}
+
+			.value {
+				font-size: 12px;
+				color: #909399;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				max-width: 120px;
+				text-align: right;
+				font-family: 'Courier New', monospace;
+			}
+
+			.net-name {
+				font-weight: 500;
+				font-size: 12px;
+				color: #303133;
+			}
+
+			.tag {
+				display: inline-block;
+				padding: 2px 6px;
+				font-size: 11px;
+				font-weight: 500;
+			}
+
+			.tag-info {
+				background: linear-gradient(135deg, #ecf5ff 0%, #d9ecff 100%);
+				color: #409eff;
+			}
+
+			.tag-warning {
+				background: linear-gradient(135deg, #faecd8 0%, #fae3cd 100%);
+				color: #e6a23c;
+			}
+
+			.item-main {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				width: 100%;
+			}
+
+			/* 中间画布区域 */
+			.canvas-area {
+				flex: 1;
+				background: #fff;
+				overflow: hidden;
+				min-width: 0;
+				height: 100%;
+				position: relative;
+			}
+
+			.canvas-wrapper {
+				width: 100%;
+				height: 100%;
+				overflow: hidden;
+				position: relative;
+				cursor: grab;
+			}
+
+			.canvas-wrapper:active {
+				cursor: grabbing;
+			}
+
+			.circuit-svg {
+				width: 100%;
+				height: 100%;
+				display: block;
+			}
+
+			.component-node {
+				cursor: pointer;
+			}
+
+			.pin-terminal {
+				cursor: pointer;
+			}
+
+			.pin-terminal:hover {
+				stroke: #409eff;
+				stroke-width: 3;
+			}
+
+			/* 缩放控制 */
+			.zoom-control-overlay {
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				z-index: 100;
+				background: transparent;
+				padding: 0;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				gap: 0;
+			}
+
+			/* 过滤网络标签覆盖层 */
+			.filter-tags-overlay {
+				position: absolute;
+				bottom: 10px;
+				right: 10px;
+				z-index: 100;
+				background: transparent;
+				padding: 4px 8px;
+				display: none;
+				max-width: 300px;
+				max-height: 200px;
+				overflow: hidden;
+			}
+
+			.filter-tags-header {
+				font-size: 12px;
+				font-weight: 600;
+				color: #606266;
+				margin-bottom: 6px;
+				padding-bottom: 4px;
+				border-bottom: 1px solid #ebeef5;
+			}
+
+			.filter-tags-container {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 6px;
+				max-height: calc(100% - 30px);
+				overflow: hidden;
+			}
+
+			.filter-tag-item {
+				display: inline-flex;
+				align-items: center;
+				gap: 4px;
+				padding: 2px 8px;
+				background: linear-gradient(135deg, #faecd8 0%, #fae3cd 100%);
+				color: #e6a23c;
+				font-size: 12px;
+				font-weight: 500;
+				cursor: pointer;
+				transition: all 0.2s ease;
+				white-space: nowrap;
+			}
+
+			.filter-tag-item:hover {
+				transform: scale(1.05);
+				background: linear-gradient(135deg, #f5d08a 0%, #f0c060 100%);
+			}
+
+			.filter-tag-item .remove-icon {
+				font-weight: bold;
+				font-size: 14px;
+			}
+
+			.zoom-btn-group {
+				display: flex;
+				align-items: stretch;
+			}
+
+			.zoom-btn {
+				width: 26px;
+				height: 26px;
+				border: 1px solid #e4e7ed;
+				background: #fff;
+				cursor: pointer;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				transition: all 0.2s ease;
+				font-size: 14px;
+				color: #606266;
+				box-sizing: border-box;
+			}
+
+			.zoom-btn:hover {
+				background: #f5f7fa;
+				border-color: #667eea;
+				color: #667eea;
+			}
+
+			.zoom-text {
+				width: 60px;
+				height: 26px;
+				text-align: center;
+				line-height: 26px;
+				font-size: 12px;
+				border: 1px solid #e4e7ed;
+				border-left: none;
+				border-right: none;
+				background: #fff;
+				color: #606266;
+				font-weight: 500;
+				box-sizing: border-box;
+			}
+
+			.network-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-bottom: 8px;
+				padding-bottom: 6px;
+				border-bottom: 1px solid #ebeef5;
+			}
+
+			.network-name {
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				font-size: 13px;
+				font-weight: 600;
+				color: #303133;
+			}
+
+			.network-pin-count {
+				font-size: 11px;
+				color: #909399;
+				background: #f5f7fa;
+				padding: 2px 6px;
+			}
+
+			.pins-list {
+				flex: 1;
+				overflow-y: auto;
+				overflow-x: hidden;
+				padding: 6px;
+			}
+
+			/* 网络详情面板样式 */
+			.net-info-header {
+				padding: 8px;
+				border-bottom: 1px solid #ebeef5;
+				background: #fafbfc;
+			}
+
+			.net-info-header .network-name {
+				font-size: 14px;
+				font-weight: 600;
+				color: #606266;
+			}
+
+			.net-info-pin-count {
+				padding: 4px 8px;
+				font-size: 12px;
+				color: #909399;
+				background: #f5f7fa;
+				border-bottom: 1px solid #ebeef5;
+			}
+
+			/* 空状态 */
+			.empty-state-container {
+				flex: 1;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				background: #1a1a1a;
+			}
+
+			.empty-content {
+				text-align: center;
+				color: #dcdfe6;
+			}
+
+			.empty-content .icon {
+				font-size: 64px;
+				margin-bottom: 16px;
+				opacity: 0.8;
+			}
+
+			.empty-content h3 {
+				font-size: 20px;
+				margin-bottom: 8px;
+				font-weight: 500;
+			}
+
+			.empty-content p {
+				font-size: 14px;
+				margin-bottom: 20px;
+				opacity: 0.7;
+			}
+
+			.empty-btn {
+				padding: 8px 20px;
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				color: #fff;
+				border: none;
+				cursor: pointer;
+				font-size: 14px;
+				font-weight: 500;
+				transition: all 0.3s ease;
+			}
+
+			.empty-btn:hover {
+				transform: translateY(-2px);
+			}
+
+			/* 隐藏文件上传 */
+			#fileInput {
+				display: none;
+			}
+
+			/* 消息提示 */
+			.msg-toast {
+				position: fixed;
+				top: 20px;
+				left: 50%;
+				transform: translateX(-50%);
+				padding: 8px 16px;
+				color: #fff;
+				font-size: 13px;
+				z-index: 9999;
+				opacity: 0;
+				transition: all 0.3s ease;
+				font-weight: 500;
+			}
+
+			.msg-success {
+				background: linear-gradient(135deg, #67c23a 0%, #85ce61 100%);
+			}
+
+			.msg-error {
+				background: linear-gradient(135deg, #f56c6c 0%, #f78989 100%);
+			}
+
+			.msg-warning {
+				background: linear-gradient(135deg, #e6a23c 0%, #ebb563 100%);
+			}
+
+			.msg-info {
+				background: linear-gradient(135deg, #909399 0%, #a6a9ad 100%);
+			}
+		</style>
+	</head>
+	<body>
+		<div class="calculator-container">
+			<!-- 顶部标题栏 -->
+			<div class="top-header" id="topHeader" style="display: none">
+				<div class="header-title">
+					<span class="separator" id="headerSeparator" style="display: none"></span>
+					<span class="file-name" id="headerFileName"></span>
+				</div>
+				<div class="header-stats">
+					<div class="header-stat">
+						<span class="num" id="compCount">0</span>
+						<span class="txt">元件</span>
+					</div>
+					<div class="header-stat">
+						<span class="num" id="netCount">0</span>
+						<span class="txt">网络</span>
+					</div>
+				</div>
+			</div>
+
+			<!-- 主工作区 -->
+			<div id="mainWorkspace" class="main-workspace" style="display: none">
+				<!-- 主内容区域 -->
+				<div class="content-area">
+					<!-- 左侧面板 -->
+					<div class="side-panel">
+						<div class="list-panel">
+							<div class="tabs-header">
+								<div class="tab-item active" data-tab="components">元件列表</div>
+								<div class="tab-item" data-tab="networks">网络列表</div>
+								<div class="tab-item" data-tab="netInfo">网络详情</div>
+							</div>
+							<div class="tab-content">
+								<!-- 元件列表面板 -->
+								<div class="tab-pane active" data-pane="components">
+									<div class="search-box">
+										<input class="search-input" id="compFilter" placeholder="搜索器件位号..." />
+									</div>
+									<div class="scroll-list custom-scrollbar" id="compList"></div>
+								</div>
+								<!-- 网络列表面板 -->
+								<div class="tab-pane" data-pane="networks">
+									<div class="search-box">
+										<input class="search-input" id="netFilter" placeholder="搜索网络名称..." />
+									</div>
+									<div class="scroll-list custom-scrollbar" id="netList"></div>
+								</div>
+								<!-- 网络详情面板 -->
+								<div class="tab-pane" data-pane="netInfo">
+									<div class="net-info-header">
+										<div class="network-name" id="netInfoName">选择网络查看详情</div>
+									</div>
+									<div class="net-info-pin-count" id="netPinCount">0 个引脚</div>
+									<div class="pins-list custom-scrollbar" id="netPinList"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- 中间画布 -->
+					<div class="canvas-area">
+						<div class="zoom-control-overlay">
+							<div class="zoom-btn-group">
+								<button class="zoom-btn" id="zoomOut">-</button>
+								<div class="zoom-text" id="zoomText">100%</div>
+								<button class="zoom-btn" id="zoomIn">+</button>
+							</div>
+						</div>
+						<div class="filter-tags-overlay" id="filterTagsOverlay">
+							<div class="filter-tags-header">已过滤网络</div>
+							<div class="filter-tags-container" id="filterTagsContainer"></div>
+						</div>
+						<div class="canvas-wrapper" id="canvasWrapper">
+							<svg class="circuit-svg" id="svgCanvas">
+								<defs>
+									<pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+										<path d="M 50 0 L 0 0 0 50" fill="none" stroke="#f0f2f5" stroke-width="1" />
+									</pattern>
+								</defs>
+								<rect id="bgRect" fill="url(#grid)" />
+								<g class="internal-wires" id="internalWires"></g>
+								<g class="connections" id="connLines"></g>
+								<g id="compNodes"></g>
+							</svg>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 空状态 -->
+			<div id="emptyState" class="empty-state-container">
+				<div class="empty-content">
+					<div class="icon">📤</div>
+					<h3>暂无网表数据</h3>
+					<p>上传 .net 网表文件开始可视化</p>
+					<button class="empty-btn" id="emptyUploadBtn">选择文件</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- 消息提示 -->
+		<div class="msg-toast" id="toast"></div>
+
+		<script>
+			// ===================== 全局状态 =====================
+			const state = {
+				fileInfo: null,
+				uploading: false,
+				activeTab: 'components',
+				hiddenNetworks: '',
+				parsedData: { components: [], networks: [] },
+				selectedComponent: null,
+				positionedComponents: [],
+				connectionLines: [],
+				mainInternalWires: [],
+				selectedNetwork: null,
+				viewBoxX: 0,
+				viewBoxY: 0,
+				viewBoxW: 1200,
+				viewBoxH: 1000,
+				isDragging: false,
+				dragStart: { x: 0, y: 0 },
+				dragViewBoxStart: { x: 0, y: 0 },
+				componentFilter: '',
+				networkFilter: '',
+			};
+
+			// ===================== DOM 元素 =====================
+			let dom = {};
+
+			// 初始化 DOM 元素引用
+			function initDom() {
+				dom = {
+					mainWorkspace: document.getElementById('mainWorkspace'),
+					emptyState: document.getElementById('emptyState'),
+					topHeader: document.getElementById('topHeader'),
+					headerSeparator: document.getElementById('headerSeparator'),
+					headerFileName: document.getElementById('headerFileName'),
+					compCount: document.getElementById('compCount'),
+					netCount: document.getElementById('netCount'),
+					compFilter: document.getElementById('compFilter'),
+					netFilter: document.getElementById('netFilter'),
+					compList: document.getElementById('compList'),
+					netList: document.getElementById('netList'),
+					canvasWrapper: document.getElementById('canvasWrapper'),
+					svgCanvas: document.getElementById('svgCanvas'),
+					bgRect: document.getElementById('bgRect'),
+					internalWires: document.getElementById('internalWires'),
+					connLines: document.getElementById('connLines'),
+					compNodes: document.getElementById('compNodes'),
+					zoomText: document.getElementById('zoomText'),
+					zoomIn: document.getElementById('zoomIn'),
+					zoomOut: document.getElementById('zoomOut'),
+					emptyUploadBtn: document.getElementById('emptyUploadBtn'),
+					filterTagsOverlay: document.getElementById('filterTagsOverlay'),
+					filterTagsContainer: document.getElementById('filterTagsContainer'),
+					netInfoName: document.getElementById('netInfoName'),
+					netPinCount: document.getElementById('netPinCount'),
+					netPinList: document.getElementById('netPinList'),
+					toast: document.getElementById('toast'),
+					tabs: document.querySelectorAll('.tab-item'),
+					panes: document.querySelectorAll('.tab-pane'),
+				};
+			}
+
+			// ===================== 工具方法 =====================
+			// 消息提示
+			function showToast(text, type = 'info') {
+				dom.toast.className = `msg-toast msg-${type}`;
+				dom.toast.innerText = text;
+				dom.toast.style.opacity = '1';
+				setTimeout(() => {
+					dom.toast.style.opacity = '0';
+				}, 2000);
+			}
+
+			// 文件大小格式化
+			function formatFileSize(bytes) {
+				if (bytes < 1024) return bytes + 'B';
+				if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + 'KB';
+				return (bytes / 1024 / 1024).toFixed(2) + 'MB';
+			}
+
+			// 文本换行
+			function wrapText(text, maxLength) {
+				if (!text) return [''];
+				const lines = [];
+				let currentLine = '';
+				for (let i = 0; i < text.length; i++) {
+					if (currentLine.length >= maxLength) {
+						lines.push(currentLine);
+						currentLine = '';
+					}
+					currentLine += text[i];
+				}
+				if (currentLine) lines.push(currentLine);
+				return lines;
+			}
+
+			// 猜测器件类型
+			function guessComponentType(designator) {
+				const map = {
+					R: '电阻',
+					C: '电容',
+					L: '电感',
+					U: '芯片',
+					D: '二极管',
+					Q: '三极管',
+					J: '接口',
+				};
+				const key = (designator.charAt(0) || '').toUpperCase();
+				return map[key] || '器件';
+			}
+
+			// 获取器件颜色
+			function getComponentColor(type) {
+				const map = {
+					'电阻': '#409EFF',
+					'电容': '#67C23A',
+					'电感': '#E6A23C',
+					'芯片': '#F56C6C',
+					'二极管': '#909399',
+					'三极管': '#00C1DE',
+					'接口': '#FF7D00',
+				};
+				return map[type] || '#909399';
+			}
+
+			// 网络颜色（哈希取色）
+			function getNetworkColor(netName) {
+				const colors = ['#409EFF', '#67C23A', '#E6A23C', '#F56C6C', '#909399', '#00C1DE', '#FF7D00', '#C0C4CC'];
+				let hash = 0;
+				for (let i = 0; i < netName.length; i++) {
+					hash = netName.charCodeAt(i) + ((hash << 5) - hash);
+				}
+				return colors[Math.abs(hash) % colors.length];
+			}
+
+			// 获取已过滤网络列表
+			function getHiddenNetList() {
+				return state.hiddenNetworks
+					.split(',')
+					.map((n) => n.trim().toUpperCase())
+					.filter(Boolean);
+			}
+
+			// 判断网络是否被过滤
+			function isNetworkFiltered(netName) {
+				return getHiddenNetList().includes(netName.toUpperCase());
+			}
+
+			// ===================== 标签页切换 =====================
+			function initTabs() {
+				dom.tabs.forEach((tab) => {
+					tab.addEventListener('click', () => {
+						const target = tab.dataset.tab;
+						dom.tabs.forEach((t) => t.classList.remove('active'));
+						tab.classList.add('active');
+						dom.panes.forEach((p) => {
+							if (p.dataset.pane === target) p.classList.add('active');
+							else p.classList.remove('active');
+						});
+					});
+				});
+			}
+
+			// ===================== 网表解析 =====================
+			function readFile(file) {
+				return new Promise((resolve, reject) => {
+					const reader = new FileReader();
+					reader.onload = (e) => resolve(e.target.result);
+					reader.onerror = reject;
+					reader.readAsText(file);
+				});
+			}
+
+			function parseNetlist(content) {
+				state.parsedData = { components: [], networks: [] };
+				const lines = content.split('\n').map((l) => l.trim());
+				const isProtelFormat = lines.some((line) => line.toUpperCase().includes('PROTEL NETLIST'));
+
+				if (isProtelFormat) {
+					parseProtelNetlist(lines);
+				} else {
+					parseNormalNetlist(lines);
+				}
+			}
+
+			// 普通网表解析
+			function parseNormalNetlist(lines) {
+				let currComp,
+					currNet,
+					inComp = false,
+					inNet = false,
+					cnt = 0;
+				lines.forEach((l) => {
+					if (!l || l.startsWith(';')) return;
+					if (l === '[') {
+						inComp = true;
+						currComp = { designator: '', footprint: '', value: '', pins: [] };
+						cnt = 0;
+						return;
+					}
+					if (l === ']') {
+						inComp = false;
+						currComp.type = guessComponentType(currComp.designator);
+						state.parsedData.components.push(currComp);
+						return;
+					}
+					if (inComp) {
+						cnt++;
+						if (cnt === 1) currComp.designator = l;
+						else if (cnt === 2) currComp.footprint = l;
+						else currComp.value += ' ' + l;
+						return;
+					}
+					if (l === '(') {
+						inNet = true;
+						currNet = { name: '', pins: [] };
+						return;
+					}
+					if (l === ')') {
+						inNet = false;
+						state.parsedData.networks.push(currNet);
+						currNet.pins.forEach((p) => {
+							const d = p.split('-')[0];
+							const c = state.parsedData.components.find((x) => x.designator === d);
+							if (c && !c.pins.includes(p)) c.pins.push(p);
+						});
+						return;
+					}
+					if (inNet) {
+						if (!currNet.name) currNet.name = l;
+						else currNet.pins.push(l);
+					}
+				});
+			}
+
+			// Protel 网表解析
+			function parseProtelNetlist(lines) {
+				let inComp = false,
+					inNet = false;
+				let currComp = null,
+					currNet = null,
+					key = null;
+				lines.forEach((l) => {
+					if (!l || l.startsWith(';')) return;
+					if (l === '[') {
+						inComp = true;
+						inNet = false;
+						currComp = { designator: '', footprint: '', value: '', pins: [] };
+						key = null;
+						return;
+					}
+					if (l === ']') {
+						if (currComp && currComp.designator) {
+							currComp.type = guessComponentType(currComp.designator);
+							state.parsedData.components.push(currComp);
+						}
+						inComp = false;
+						currComp = null;
+						key = null;
+						return;
+					}
+					if (l === '(') {
+						inNet = true;
+						inComp = false;
+						currNet = { name: '', pins: [] };
+						return;
+					}
+					if (l === ')') {
+						if (currNet && currNet.name) {
+							state.parsedData.networks.push(currNet);
+							currNet.pins.forEach((p) => {
+								const d = p.split('-')[0];
+								const c = state.parsedData.components.find((x) => x.designator === d);
+								if (c && !c.pins.includes(p)) c.pins.push(p);
+							});
+						}
+						inNet = false;
+						currNet = null;
+						return;
+					}
+					if (l === '*') return;
+					if (inComp && currComp) {
+						if (key === null) key = l.toUpperCase();
+						else {
+							switch (key) {
+								case 'DESIGNATOR':
+									currComp.designator = l;
+									break;
+								case 'FOOTPRINT':
+									currComp.footprint = l;
+									break;
+								case 'PARTTYPE':
+									currComp.partType = l;
+									break;
+								case 'VALUE':
+									currComp.value = l;
+									break;
+								case 'NAME':
+									if (!currComp.value) currComp.value = l;
+									break;
+							}
+							key = null;
+						}
+					}
+					if (inNet && currNet) {
+						if (!currNet.name) currNet.name = l.trim();
+						else {
+							const parts = l.split(/\s+/);
+							if (parts.length > 0) {
+								const pinFull = parts[0];
+								if (pinFull.includes('-')) currNet.pins.push(pinFull);
+							}
+						}
+					}
+				});
+			}
+
+			// ===================== 列表渲染 =====================
+			function renderCompList() {
+				const filter = (state.componentFilter || '').toUpperCase();
+				const list = state.parsedData.components.filter((comp) => comp.designator.toUpperCase().includes(filter));
+				let html = '';
+				list.forEach((comp) => {
+					const active = state.selectedComponent === comp.designator ? 'active' : '';
+					const val = comp.value || comp.footprint || '';
+					html += `
+			          <div class="list-item ${active}" data-des="${comp.designator}">
+			            <span class="desig">${comp.designator}</span>
+			            <span class="value">${val}</span>
+			          </div>
+			        `;
+				});
+				dom.compList.innerHTML = html;
+				// 绑定点击
+				dom.compList.querySelectorAll('.list-item').forEach((item) => {
+					item.addEventListener('click', () => {
+						selectComponent(item.dataset.des);
+					});
+				});
+			}
+
+			function renderNetList() {
+				const filter = (state.networkFilter || '').toUpperCase();
+				const list = state.parsedData.networks.filter((net) => net.name.toUpperCase().includes(filter));
+				let html = '';
+				list.forEach((net) => {
+					const filtered = isNetworkFiltered(net.name) ? 'filtered' : '';
+					const isHide = isNetworkFiltered(net.name);
+					const tagText = isHide ? '已过滤' : `${net.pins.length} Pin`;
+					const tagClass = isHide ? 'tag-warning' : 'tag-info';
+					html += `
+			          <div class="list-item ${filtered}" data-net="${net.name}">
+			            <div class="item-main">
+			              <span class="net-name">${net.name}</span>
+			              <span class="tag ${tagClass}">${tagText}</span>
+			            </div>
+			          </div>
+			        `;
+				});
+				dom.netList.innerHTML = html;
+				// 绑定点击
+				dom.netList.querySelectorAll('.list-item').forEach((item) => {
+					item.addEventListener('click', () => {
+						toggleNetworkFilter(item.dataset.net);
+					});
+				});
+			}
+
+			// 渲染已过滤标签（显示在画布右下角）
+			function renderFilterTags() {
+				const list = getHiddenNetList();
+				if (list.length === 0) {
+					dom.filterTagsOverlay.style.display = 'none';
+					return;
+				}
+				dom.filterTagsOverlay.style.display = 'block';
+				let html = '';
+				list.forEach((net) => {
+					html += `
+			          <div class="filter-tag-item" data-net="${net}">
+			            ${net} <span class="remove-icon">×</span>
+			          </div>
+			        `;
+				});
+				dom.filterTagsContainer.innerHTML = html;
+				// 移除过滤
+				dom.filterTagsContainer.querySelectorAll('.filter-tag-item').forEach((item) => {
+					item.addEventListener('click', () => {
+						removeFilterNetwork(item.dataset.net);
+					});
+				});
+			}
+
+			// 渲染选中网络信息
+			function renderNetInfo() {
+				if (!state.selectedNetwork) {
+					dom.netInfoName.innerText = '选择网络查看详情';
+					dom.netPinCount.innerText = '0 个引脚';
+					dom.netPinList.innerHTML = '';
+					return;
+				}
+				const net = state.parsedData.networks.find((n) => n.name.toUpperCase() === state.selectedNetwork.toUpperCase());
+				if (!net) {
+					dom.netInfoName.innerText = '选择网络查看详情';
+					dom.netPinCount.innerText = '0 个引脚';
+					dom.netPinList.innerHTML = '';
+					return;
+				}
+				dom.netInfoName.style.color = getNetworkColor(net.name);
+				dom.netInfoName.innerText = net.name;
+				dom.netPinCount.innerText = `${net.pins.length} 个引脚`;
+
+				let pinHtml = '';
+				net.pins.forEach((pin) => {
+					const [comp, num] = pin.split('-');
+					pinHtml += `
+			          <div class="list-item" data-pin="${pin}">
+			            <span class="desig">${comp}</span>
+			            <span class="value">${num}</span>
+			          </div>
+			        `;
+				});
+				dom.netPinList.innerHTML = pinHtml;
+				// 引脚点击聚焦
+				dom.netPinList.querySelectorAll('.list-item').forEach((item) => {
+					item.addEventListener('click', () => {
+						focusOnPin(item.dataset.pin);
+					});
+				});
+			}
+
+			// 更新顶部统计
+			function updateStat() {
+				dom.compCount.innerText = state.parsedData.components.length;
+				dom.netCount.innerText = state.parsedData.networks.length;
+				// 更新页面标题
+				if (state.fileInfo && state.fileInfo.name) {
+					document.title = `网表可视化工具 - ${state.fileInfo.name}`;
+				} else {
+					document.title = '网表可视化工具';
+				}
+			}
+
+			// ===================== 画布布局 & 绘图 =====================
+			// 初始化引脚布局
+			function initCompPinLayout(comp, isMain) {
+				const pinCount = comp.pins.length || 1;
+				const text = comp.value || comp.footprint || '';
+				const textLines = Math.max(1, Math.ceil(text.length / 12));
+				comp.boxW = 140;
+				comp.boxH = 60 + pinCount * 28 + (textLines - 1) * 16;
+				comp.pins = comp.pins.map((name, i) => {
+					const num = name.split('-').pop();
+					const py = -comp.boxH / 2 + 30 + i * 28;
+					return isMain
+						? { name, num, px: comp.boxW / 2, py, txtX: comp.boxW / 2 + 16, txtY: py + 5 }
+						: { name, num, px: -comp.boxW / 2, py, txtX: -comp.boxW / 2 - 16, txtY: py + 5 };
+				});
+			}
+
+			// 布局所有器件
+			function layoutComponentsNew() {
+				const all = JSON.parse(JSON.stringify(state.parsedData.components));
+				state.positionedComponents = all;
+				if (!state.selectedComponent) return;
+
+				const mainComp = all.find((c) => c.designator === state.selectedComponent);
+				const slaves = getFinalShowComponents().filter((c) => c.designator !== state.selectedComponent);
+
+				slaves.forEach((comp) => initCompPinLayout(comp, false));
+				initCompPinLayout(mainComp, true);
+
+				mainComp.x = 400;
+				const hiddenList = getHiddenNetList();
+				const netToSlaves = {};
+
+				state.parsedData.networks.forEach((net) => {
+					if (hiddenList.includes(net.name.toUpperCase())) return;
+					netToSlaves[net.name] = net.pins.filter((p) => !p.startsWith(mainComp.designator + '-')).map((p) => p.split('-')[0]);
+				});
+
+				const arrangedSlaves = [];
+				const arrangedSet = new Set();
+				mainComp.pins.forEach((mainPin) => {
+					state.parsedData.networks.forEach((net) => {
+						if (hiddenList.includes(net.name.toUpperCase())) return;
+						if (net.pins.includes(mainPin.name)) {
+							const slaveNames = netToSlaves[net.name] || [];
+							slaveNames.forEach((slaveName) => {
+								if (!arrangedSet.has(slaveName)) {
+									const slave = slaves.find((c) => c.designator === slaveName);
+									if (slave) {
+										arrangedSlaves.push(slave);
+										arrangedSet.add(slaveName);
+									}
+								}
+							});
+						}
+					});
+				});
+
+				if (arrangedSlaves.length === 0) arrangedSlaves.push(...slaves);
+				const slaveGap = 40;
+				let totalSlaveHeight = 0;
+				arrangedSlaves.forEach((comp) => (totalSlaveHeight += comp.boxH));
+				totalSlaveHeight += (arrangedSlaves.length - 1) * slaveGap;
+
+				const slavesCenterY = totalSlaveHeight / 2;
+				mainComp.y = slavesCenterY;
+
+				let currentY = 0;
+				arrangedSlaves.forEach((comp) => {
+					comp.x = mainComp.x + 800;
+					comp.y = currentY + comp.boxH / 2;
+					currentY += comp.boxH + slaveGap;
+				});
+			}
+
+			// 获取最终显示器件
+			function getFinalShowComponents() {
+				const main = state.selectedComponent;
+				if (!main) return state.positionedComponents;
+				const related = new Set();
+				related.add(main);
+				const hidden = getHiddenNetList();
+
+				state.parsedData.networks.forEach((net) => {
+					if (hidden.includes(net.name.toUpperCase())) return;
+					if (net.pins.some((p) => p.startsWith(main + '-'))) {
+						net.pins.forEach((p) => related.add(p.split('-')[0]));
+					}
+				});
+				return state.positionedComponents.filter((c) => related.has(c.designator));
+			}
+
+			// 绘制走线
+			function drawSlantConnections() {
+				state.connectionLines = [];
+				state.mainInternalWires = [];
+				dom.internalWires.innerHTML = '';
+				dom.connLines.innerHTML = '';
+				if (!state.selectedComponent) return;
+
+				const main = state.positionedComponents.find((c) => c.designator === state.selectedComponent);
+				const colors = ['#409EFF', '#67C23A', '#E6A23C', '#F56C6C', '#909399', '#00C1DE'];
+				const hidden = getHiddenNetList();
+
+				// 主器件内部连线
+				state.parsedData.networks.forEach((net, idx) => {
+					if (hidden.includes(net.name.toUpperCase())) return;
+					const mainPins = net.pins.filter((p) => p.startsWith(main.designator + '-'));
+					if (mainPins.length < 2) return;
+
+					const points = mainPins
+						.map((pinName) => {
+							const p = main.pins.find((x) => x.name === pinName);
+							return p ? { x: main.x - main.boxW / 2 - 10, y: main.y + p.py } : null;
+						})
+						.filter(Boolean);
+					points.sort((a, b) => a.y - b.y);
+					const color = colors[idx % colors.length];
+					const extendLength = 30;
+
+					for (let i = 1; i < points.length; i++) {
+						const prev = points[i - 1];
+						const curr = points[i];
+						const path = `M ${prev.x} ${prev.y} L ${prev.x - extendLength} ${prev.y} L ${curr.x - extendLength} ${curr.y} L ${curr.x} ${curr.y}`;
+						const midY = (prev.y + curr.y) / 2;
+						const labelX = prev.x - extendLength;
+						const labelY = midY - 5;
+
+						const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+						pathEl.setAttribute('d', path);
+						pathEl.setAttribute('stroke', color);
+						pathEl.setAttribute(
+							'stroke-width',
+							state.selectedNetwork && net.name.toUpperCase() === state.selectedNetwork.toUpperCase() ? '5' : '3',
+						);
+						pathEl.setAttribute('fill', 'none');
+						pathEl.setAttribute(
+							'opacity',
+							state.selectedNetwork && net.name.toUpperCase() !== state.selectedNetwork.toUpperCase() ? '0.2' : '1',
+						);
+						dom.internalWires.appendChild(pathEl);
+					}
+				});
+
+				// 主器件 -> 从器件连线
+				state.parsedData.networks.forEach((net, idx) => {
+					if (hidden.includes(net.name.toUpperCase())) return;
+					const mainPin = net.pins.find((p) => p.startsWith(main.designator + '-'));
+					if (!mainPin) return;
+					const mp = main.pins.find((x) => x.name === mainPin);
+					const mx = main.x + mp.px;
+					const my = main.y + mp.py;
+					const isSelectedNet = state.selectedNetwork && net.name.toUpperCase() === state.selectedNetwork.toUpperCase();
+					const extendLength = isSelectedNet ? 50 : 0;
+					const color = colors[idx % colors.length];
+
+					net.pins.forEach((pinStr) => {
+						const compName = pinStr.split('-')[0];
+						if (compName === main.designator) return;
+						const slave = state.positionedComponents.find((c) => c.designator === compName);
+						if (!slave) return;
+						const sp = slave.pins.find((x) => x.name === pinStr);
+						if (!sp) return;
+						const sx = slave.x + sp.px;
+						const sy = slave.y + sp.py;
+
+						let path, labelX, labelY;
+						if (isSelectedNet) {
+							const mEx = mx + extendLength;
+							const sEx = sx - extendLength;
+							path = `M ${mx} ${my} L ${mEx} ${my} L ${sEx} ${sy} L ${sx} ${sy}`;
+							labelX = (mEx + sEx) / 2;
+							labelY = (my + sy) / 2 - 5;
+						} else {
+							path = `M ${mx} ${my} L ${sx} ${sy}`;
+							labelX = (mx + sx) / 2;
+							labelY = (my + sy) / 2 - 5;
+						}
+
+						// 绘制线段
+						const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+						pathEl.setAttribute('d', path);
+						pathEl.setAttribute('stroke', color);
+						pathEl.setAttribute('stroke-width', isSelectedNet ? '5' : '3');
+						pathEl.setAttribute(
+							'opacity',
+							state.selectedNetwork && net.name.toUpperCase() !== state.selectedNetwork.toUpperCase() ? '0.2' : '1',
+						);
+						pathEl.setAttribute('fill', 'none');
+						dom.connLines.appendChild(pathEl);
+
+						// 绘制端点圆点
+						const createCircle = (x, y) => {
+							const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+							circle.setAttribute('cx', x);
+							circle.setAttribute('cy', y);
+							circle.setAttribute('r', '4');
+							circle.setAttribute('fill', color);
+							if (isSelectedNet) {
+								circle.setAttribute('stroke', '#fff');
+								circle.setAttribute('stroke-width', '2');
+							}
+							dom.connLines.appendChild(circle);
+						};
+						createCircle(mx, my);
+						createCircle(sx, sy);
+
+						// 文字标签
+						if (!state.selectedNetwork || isSelectedNet) {
+							const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+							text.setAttribute('x', labelX);
+							text.setAttribute('y', labelY);
+							text.setAttribute('fill', color);
+							text.setAttribute('font-size', '11');
+							text.setAttribute('font-weight', 'bold');
+							text.setAttribute('text-anchor', 'middle');
+							text.style.pointerEvents = 'none';
+							text.style.textShadow = '1px 1px 2px rgba(255,255,255,0.8)';
+							text.textContent = net.name;
+							dom.connLines.appendChild(text);
+						}
+					});
+				});
+			}
+
+			// 绘制器件
+			function renderComponents() {
+				dom.compNodes.innerHTML = '';
+				const comps = getFinalShowComponents();
+				comps.forEach((comp) => {
+					const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+					g.setAttribute('transform', `translate(${comp.x}, ${comp.y})`);
+					g.setAttribute('class', 'component-node');
+					g.dataset.des = comp.designator;
+
+					// 矩形外壳
+					const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+					rect.setAttribute('x', -comp.boxW / 2);
+					rect.setAttribute('y', -comp.boxH / 2);
+					rect.setAttribute('width', comp.boxW);
+					rect.setAttribute('height', comp.boxH);
+					rect.setAttribute('fill', getComponentColor(comp.type));
+					rect.setAttribute('stroke', '#fff');
+					rect.setAttribute('stroke-width', '3');
+					rect.setAttribute('rx', '6');
+					rect.setAttribute('ry', '6');
+					g.appendChild(rect);
+
+					// 位号文字
+					const text1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+					text1.setAttribute('x', '0');
+					text1.setAttribute('y', '-8');
+					text1.setAttribute('text-anchor', 'middle');
+					text1.setAttribute('fill', '#fff');
+					text1.setAttribute('font-size', '16');
+					text1.setAttribute('font-weight', 'bold');
+					text1.textContent = comp.designator;
+					g.appendChild(text1);
+
+					// 器件描述文字（自动换行）
+					const text2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+					text2.setAttribute('x', '0');
+					text2.setAttribute('y', '12');
+					text2.setAttribute('text-anchor', 'middle');
+					text2.setAttribute('fill', 'rgba(255,255,255,0.9)');
+					text2.setAttribute('font-size', '12');
+					const textLines = wrapText(comp.value || comp.footprint, 12);
+					let dy = 0;
+					for (const line of textLines) {
+						const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+						tspan.setAttribute('x', '0');
+						tspan.setAttribute('dy', dy + 'px');
+						tspan.textContent = line;
+						text2.appendChild(tspan);
+						dy = 16;
+					}
+					g.appendChild(text2);
+
+					// 右侧引脚 + 引脚文字
+					comp.pins.forEach((pin) => {
+						// 引脚圆点
+						const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+						circle.setAttribute('cx', pin.px);
+						circle.setAttribute('cy', pin.py);
+						circle.setAttribute('r', '5');
+						circle.setAttribute('fill', '#fff');
+						circle.setAttribute('stroke', '#666');
+						circle.setAttribute('stroke-width', '2');
+						circle.setAttribute('class', 'pin-terminal');
+						circle.dataset.comp = comp.designator;
+						circle.dataset.pin = pin.name;
+						g.appendChild(circle);
+
+						// 引脚编号文字
+						const pinTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+						pinTxt.setAttribute('x', pin.txtX);
+						pinTxt.setAttribute('y', pin.txtY);
+						pinTxt.setAttribute('font-size', '13');
+						pinTxt.setAttribute('fill', '#333');
+						pinTxt.setAttribute('text-anchor', 'middle');
+						pinTxt.textContent = pin.num;
+						g.appendChild(pinTxt);
+					});
+
+					// 选中当前器件时：左侧镜像引脚 + 文字
+					if (comp.designator === state.selectedComponent) {
+						const leftGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+						comp.pins.forEach((pin) => {
+							// 左侧引脚圆点
+							const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+							circle.setAttribute('cx', -pin.px);
+							circle.setAttribute('cy', pin.py);
+							circle.setAttribute('r', '5');
+							circle.setAttribute('fill', '#fff');
+							circle.setAttribute('stroke', '#666');
+							circle.setAttribute('stroke-width', '2');
+							circle.setAttribute('class', 'pin-terminal');
+							circle.dataset.comp = comp.designator;
+							circle.dataset.pin = pin.name;
+							leftGroup.appendChild(circle);
+
+							// 左侧引脚文字
+							const pinTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+							pinTxt.setAttribute('x', -pin.txtX);
+							pinTxt.setAttribute('y', pin.txtY);
+							pinTxt.setAttribute('font-size', '13');
+							pinTxt.setAttribute('fill', '#333');
+							pinTxt.setAttribute('text-anchor', 'middle');
+							pinTxt.textContent = pin.num;
+							leftGroup.appendChild(pinTxt);
+						});
+						g.appendChild(leftGroup);
+					}
+
+					// 器件点击事件
+					g.addEventListener('click', (e) => {
+						const des = g.dataset.des;
+						if (des !== state.selectedComponent) {
+							selectComponent(des);
+						}
+					});
+
+					dom.compNodes.appendChild(g);
+				});
+
+				// 绑定引脚点击事件
+				document.querySelectorAll('.pin-terminal').forEach((el) => {
+					el.addEventListener('click', (e) => {
+						e.stopPropagation();
+						const comp = el.dataset.comp;
+						const pin = el.dataset.pin;
+						selectPin(comp, pin);
+					});
+				});
+			}
+
+			// 刷新整个画布（布局 + 连线 + 器件 + 列表 + 侧边信息）
+			function refreshVisual() {
+				layoutComponentsNew();
+				drawSlantConnections();
+				renderComponents();
+				renderCompList();
+				renderNetList();
+				renderFilterTags();
+				renderNetInfo();
+				updateViewBox();
+				showToast('已刷新', 'success');
+			}
+
+			// 选中元件
+			function selectComponent(des) {
+				state.selectedComponent = des;
+				state.selectedNetwork = null;
+				refreshVisual();
+				resetZoom();
+			}
+
+			// 选中引脚 -> 选中对应网络
+			function selectPin(component, pinName) {
+				const network = state.parsedData.networks.find((net) => net.pins.includes(pinName));
+				if (!network) return;
+
+				if (state.selectedNetwork === network.name) {
+					state.selectedNetwork = null;
+				} else {
+					state.selectedNetwork = network.name;
+				}
+				drawSlantConnections();
+				renderNetInfo();
+			}
+
+			// 切换网络过滤状态
+			function toggleNetworkFilter(netName) {
+				const upper = netName.toUpperCase();
+				const list = getHiddenNetList();
+				if (list.includes(upper)) {
+					state.hiddenNetworks = list.filter((n) => n !== upper).join(',');
+				} else {
+					list.push(upper);
+					state.hiddenNetworks = list.join(',');
+				}
+				refreshVisual();
+			}
+
+			// 移除单个过滤网络
+			function removeFilterNetwork(netName) {
+				const upper = netName.toUpperCase();
+				const list = getHiddenNetList().filter((n) => n !== upper);
+				state.hiddenNetworks = list.join(',');
+				refreshVisual();
+			}
+
+			// 聚焦到指定引脚
+			function focusOnPin(pin) {
+				const [compName, pinNum] = pin.split('-');
+				const component = state.positionedComponents.find((c) => c.designator === compName);
+				if (!component || !component.pins) return;
+
+				const pinInfo = component.pins.find((p) => p.num === pinNum);
+				if (!pinInfo) return;
+
+				state.viewBoxW = 800;
+				state.viewBoxH = 600;
+				const px = component.x + pinInfo.px;
+				const py = component.y + pinInfo.py;
+				state.viewBoxX = px - state.viewBoxW / 2;
+				state.viewBoxY = py - state.viewBoxH / 2;
+				updateViewBox();
+			}
+
+			// 更新 SVG viewBox & 背景矩形
+			function updateViewBox() {
+				dom.svgCanvas.setAttribute('viewBox', `${state.viewBoxX} ${state.viewBoxY} ${state.viewBoxW} ${state.viewBoxH}`);
+				dom.bgRect.setAttribute('x', state.viewBoxX);
+				dom.bgRect.setAttribute('y', state.viewBoxY);
+				dom.bgRect.setAttribute('width', state.viewBoxW);
+				dom.bgRect.setAttribute('height', state.viewBoxH);
+
+				// 更新缩放百分比
+				const scale = Math.round((1000 / state.viewBoxW) * 100);
+				dom.zoomText.innerText = scale + '%';
+			}
+
+			// 重置缩放与视口
+			function resetZoom() {
+				state.viewBoxW = 1200;
+				state.viewBoxH = 1000;
+
+				if (state.selectedComponent) {
+					const main = state.positionedComponents.find((c) => c.designator === state.selectedComponent);
+					if (main) {
+						state.viewBoxX = main.x - state.viewBoxW / 2;
+						state.viewBoxY = main.y - state.viewBoxH / 2;
+						updateViewBox();
+						return;
+					}
+				}
+				state.viewBoxX = 0;
+				state.viewBoxY = 0;
+				updateViewBox();
+			}
+
+			// 放大
+			function zoomIn() {
+				const cx = state.viewBoxX + state.viewBoxW / 2;
+				const cy = state.viewBoxY + state.viewBoxH / 2;
+				state.viewBoxW = Math.max(100, state.viewBoxW * 0.9);
+				state.viewBoxH = Math.max(83, state.viewBoxH * 0.9);
+				state.viewBoxX = cx - state.viewBoxW / 2;
+				state.viewBoxY = cy - state.viewBoxH / 2;
+				updateViewBox();
+			}
+
+			// 缩小
+			function zoomOut() {
+				const cx = state.viewBoxX + state.viewBoxW / 2;
+				const cy = state.viewBoxY + state.viewBoxH / 2;
+				state.viewBoxW = state.viewBoxW * 1.1;
+				state.viewBoxH = state.viewBoxH * 1.1;
+				state.viewBoxX = cx - state.viewBoxW / 2;
+				state.viewBoxY = cy - state.viewBoxH / 2;
+				updateViewBox();
+			}
+
+			// 画布拖拽 - 鼠标按下
+			function canvasMouseDown(e) {
+				state.isDragging = true;
+				state.dragStart.x = e.clientX;
+				state.dragStart.y = e.clientY;
+				state.dragViewBoxStart.x = state.viewBoxX;
+				state.dragViewBoxStart.y = state.viewBoxY;
+			}
+
+			// 画布拖拽 - 鼠标移动
+			function canvasMouseMove(e) {
+				if (!state.isDragging) return;
+				const rect = dom.canvasWrapper.getBoundingClientRect();
+				const dx = (e.clientX - state.dragStart.x) * (state.viewBoxW / rect.width);
+				const dy = (e.clientY - state.dragStart.y) * (state.viewBoxH / rect.height);
+				state.viewBoxX = state.dragViewBoxStart.x - dx;
+				state.viewBoxY = state.dragViewBoxStart.y - dy;
+				updateViewBox();
+			}
+
+			// 画布拖拽 - 鼠标抬起/离开
+			function canvasMouseUp() {
+				state.isDragging = false;
+			}
+
+			// 滚轮缩放
+			function handleCanvasWheel(e) {
+				e.preventDefault();
+				const rect = dom.canvasWrapper.getBoundingClientRect();
+				const mouseX = e.clientX - rect.left;
+				const mouseY = e.clientY - rect.top;
+
+				const zoomFactor = e.deltaY > 0 ? 1.1 : 0.9;
+				const newW = Math.max(100, state.viewBoxW * zoomFactor);
+				const newH = Math.max(83, state.viewBoxH * zoomFactor);
+
+				const ratioX = mouseX / rect.width;
+				const ratioY = mouseY / rect.height;
+
+				state.viewBoxX = state.viewBoxX + (state.viewBoxW - newW) * ratioX;
+				state.viewBoxY = state.viewBoxY + (state.viewBoxH - newH) * ratioY;
+				state.viewBoxW = newW;
+				state.viewBoxH = newH;
+				updateViewBox();
+			}
+
+			// 文件上传处理
+			async function handleFileUpload(file) {
+				if (!file || !file.name.toLowerCase().endsWith('.net')) {
+					showToast('请上传 .net 网表文件', 'error');
+					return;
+				}
+				state.uploading = true;
+				try {
+					const content = await readFile(file);
+					state.fileInfo = { name: file.name, size: file.size };
+					dom.headerSeparator.style.display = 'inline';
+					dom.headerFileName.innerText = file.name;
+					dom.headerFileName.title = file.name;
+
+					parseNetlist(content);
+					if (state.parsedData.components.length > 0) {
+						state.selectedComponent = state.parsedData.components[0].designator;
+					}
+
+					updateStat();
+					refreshVisual();
+					showToast('解析成功', 'success');
+					// 切换显示区域
+					dom.emptyState.style.display = 'none';
+					dom.topHeader.style.display = 'flex';
+					dom.mainWorkspace.style.display = 'flex';
+				} catch (err) {
+					showToast('解析失败', 'error');
+				} finally {
+					state.uploading = false;
+				}
+			}
+
+			// 触发文件选择 - 使用立创 EDA API
+			async function triggerFileUpload() {
+				try {
+					const files = await eda.sys_FileSystem.openReadFileDialog('.net', false);
+					if (files) {
+						const file = Array.isArray(files) ? files[0] : files;
+						if (file) {
+							await handleFileUpload(file);
+						}
+					}
+				} catch (err) {
+					showToast('文件选择取消', 'info');
+				}
+			}
+
+			// 导出 JSON 数据
+			function exportData() {
+				const blob = new Blob([JSON.stringify(state.parsedData, null, 2)], { type: 'application/json' });
+				const a = document.createElement('a');
+				a.href = URL.createObjectURL(blob);
+				a.download = 'netlist.json';
+				a.click();
+				showToast('导出成功', 'success');
+			}
+
+			// 重置所有数据
+			function clearData() {
+				state.fileInfo = null;
+				state.parsedData = { components: [], networks: [] };
+				state.selectedComponent = null;
+				state.hiddenNetworks = '';
+				state.selectedNetwork = null;
+				state.positionedComponents = [];
+				state.connectionLines = [];
+				state.mainInternalWires = [];
+
+				dom.headerSeparator.style.display = 'none';
+				dom.headerFileName.innerText = '';
+				updateStat();
+				resetZoom();
+
+				// 清空画布 & 列表
+				dom.compList.innerHTML = '';
+				dom.netList.innerHTML = '';
+				dom.internalWires.innerHTML = '';
+				dom.connLines.innerHTML = '';
+				dom.compNodes.innerHTML = '';
+				dom.filterSection.style.display = 'none';
+
+				// 切换为空状态
+				dom.topHeader.style.display = 'none';
+				dom.mainWorkspace.style.display = 'none';
+				dom.emptyState.style.display = 'flex';
+				showToast('已重置', 'info');
+			}
+
+			// ===================== 全局事件绑定 =====================
+			function initEvent() {
+				// 标签页
+				initTabs();
+
+				// 文件上传 - 使用立创 EDA API
+				dom.emptyUploadBtn.addEventListener('click', triggerFileUpload);
+
+				// 缩放按钮
+				dom.zoomIn.addEventListener('click', zoomIn);
+				dom.zoomOut.addEventListener('click', zoomOut);
+
+				// 画布拖拽、滚轮
+				dom.canvasWrapper.addEventListener('mousedown', canvasMouseDown);
+				document.addEventListener('mousemove', canvasMouseMove);
+				document.addEventListener('mouseup', canvasMouseUp);
+				dom.canvasWrapper.addEventListener('mouseleave', canvasMouseUp);
+				dom.canvasWrapper.addEventListener('wheel', handleCanvasWheel);
+
+				// 搜索框监听
+				dom.compFilter.addEventListener('input', (e) => {
+					state.componentFilter = e.target.value;
+					renderCompList();
+				});
+				dom.netFilter.addEventListener('input', (e) => {
+					state.networkFilter = e.target.value;
+					renderNetList();
+				});
+			}
+
+			// 页面初始化
+			window.onload = function () {
+				// 先初始化 DOM 元素引用
+				initDom();
+				initEvent();
+				updateViewBox();
+			};
+		</script>
+	</body>
+</html>
